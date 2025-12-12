@@ -5,6 +5,7 @@ from packaging import version as pkg_version
 import logging
 
 from config import settings
+from modules.vulnerability_cache import VulnerabilityCache
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,7 @@ class DependencyAnalyzer:
         self.nvd_api_url = settings.NVD_API_URL
         self.osv_api_url = settings.OSV_API_URL
         self.timeout = 30.0
+        self.cache = VulnerabilityCache()
     
     async def analyze_package(
         self,
@@ -21,6 +23,10 @@ class DependencyAnalyzer:
         version: str,
         ecosystem: str = "npm"
     ) -> Dict[str, Any]:
+        cached = self.cache.get(package_name, version, ecosystem)
+        if cached:
+            return {**cached, "cached": True}
+        
         vulnerabilities = []
         
         osv_vulns = await self._check_osv(package_name, version, ecosystem)
@@ -31,15 +37,20 @@ class DependencyAnalyzer:
         
         risk_score = self._calculate_risk_score(vulnerabilities)
         
-        return {
+        result = {
             "package_name": package_name,
             "version": version,
             "ecosystem": ecosystem,
             "vulnerabilities": vulnerabilities,
             "vulnerability_count": len(vulnerabilities),
             "risk_score": risk_score,
-            "risk_level": self._get_risk_level(risk_score)
+            "risk_level": self._get_risk_level(risk_score),
+            "cached": False
         }
+        
+        self.cache.set(package_name, version, result, ecosystem)
+        
+        return result
     
     async def _check_osv(
         self,
