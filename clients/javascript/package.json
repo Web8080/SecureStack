@@ -1,0 +1,29 @@
+{
+  "name": "@securestack/client",
+  "version": "1.0.0",
+  "description": "JavaScript/TypeScript client for SecureStack DevSecOps Platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "devsecops",
+    "security",
+    "api",
+    "compliance",
+    "sbom"
+  ],
+  "author": "SecureStack",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  }
+}
+
+
